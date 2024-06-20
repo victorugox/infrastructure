@@ -13,30 +13,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      -name: Set up AWS CLI
+      - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
-          aaws-region: us-east-1
-      -name: Extra Bucket Name from Issue
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Extract Bucket Name from Issue
         run: |
-          export BUCKET_NAME=$(echo ''${{github.event.issue.title}}'')
+          export BUCKET_NAME=$(echo '${{ github.event.issue.title }}')
           echo 'Bucket Name: $BUCKET_NAME'
           echo 'BUCKET_NAME=$BUCKET_NAME' >> $GITHUB_ENV
 
-      -name: Run Terraform
+      - name: Run Terraform
         run: |
-          cd terraform
-          cd s3-bucket-static
+          cd terraform/s3-bucket-static
           terraform init
-          terraform apply -auto-approve -var='bucket_name=${{ env.BUCEKT}}'
+          terraform apply -auto-approve -var='bucket_name=${{ env.BUCKET_NAME }}'
       
-      -name: Add coment
-        run: gh issue comment '$NUMBER' --repo '$REPO' --body '$BODY'
+      - name: Add comment
+        run: gh issue comment '${{ github.event.issue.number }}' --repo '${{ github.repository }}' --body 'O bucket S3 foi criado com sucesso! 🎉'
         env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN}}
-        NUMBER: ${{ github.event.issue.number}}
-        REPO: ${{ github.repository}}
-        BODY: >
-          O bucket S3 foi criado com sucesso! 🎉
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NUMBER: ${{ github.event.issue.number }}
+          REPO: ${{ github.repository }}
+          BODY: 'O bucket S3 foi criado com sucesso! 🎉'
